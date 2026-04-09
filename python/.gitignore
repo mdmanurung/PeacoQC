@@ -5,3 +5,13 @@ __pycache__/
 dist/
 build/
 .venv/
+
+# Sphinx build
+docs/_build/
+docs/source/generated/
+docs/source/.jupyter_cache/
+docs/source/.ipynb_checkpoints/
+
+# Vignette notebook runtime output
+docs/source/PeacoQC_Example1/
+docs/source/PeacoQC_Example2/
