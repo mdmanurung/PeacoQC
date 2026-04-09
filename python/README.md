@@ -50,8 +50,10 @@ for the underlying methodology.
 - **Isolation Tree**: the R package ships a custom SD-based isolation tree.
   This port uses `sklearn.ensemble.IsolationForest` — the results are
   broadly equivalent but not bit-identical.
-- **Smoothing**: R's `smooth.spline(spar=0.5)` is approximated with
-  `scipy.signal.savgol_filter`.
+- **Smoothing**: per-channel peak trajectories are smoothed with
+  `scipy.interpolate.make_smoothing_spline` (GCV-chosen lambda) — a cubic
+  smoothing spline, the same family as R's `smooth.spline`. R's explicit
+  `spar=0.5` parameter is not reproduced exactly.
 - **Output layout**: the port returns a typed `PeacoQCResult` dataclass and
   writes a CSV report by default. The original R-style report TSV is still
   readable by `peaco_qc_heatmap`.

@@ -4,8 +4,10 @@
   as a pragmatic replacement for the R package's custom SD-based isolation
   tree. Results are broadly equivalent but not bit-identical (documented in
   ``README.md``).
-- :func:`mad_outlier_method` smooths each peak trajectory with a Savitzky-
-  Golay filter (≈ R's ``smooth.spline(spar=0.5)``) and flags bins outside a
+- :func:`mad_outlier_method` smooths each peak trajectory with
+  :func:`scipy.interpolate.make_smoothing_spline` — a cubic smoothing spline
+  (GCV-chosen lambda), the same family as R's ``stats::smooth.spline`` but
+  without a direct equivalent of R's ``spar=0.5`` — and flags bins outside a
   ``median ± MAD * mad`` window.
 """
 
@@ -15,7 +17,7 @@ from typing import Iterable
 
 import numpy as np
 import pandas as pd
-from scipy.signal import savgol_filter
+from scipy.interpolate import make_smoothing_spline
 from scipy.stats import median_abs_deviation
 from sklearn.ensemble import IsolationForest
 
@@ -101,23 +103,35 @@ def isolation_tree_outliers(
 
 
 def _smooth_trajectory(y: np.ndarray) -> np.ndarray:
-    """Savitzky-Golay smoothing with R-like behaviour for small inputs."""
+    """Cubic smoothing spline (GCV lambda) with R-like fallbacks.
+
+    Mirrors the role of R's ``stats::smooth.spline(seq_along(y), y, spar=0.5)``
+    in ``MADOutliers``. We do not match R's ``spar=0.5`` exactly — scipy
+    selects lambda by generalised cross-validation — but the result is a
+    true cubic smoothing spline in the same family, which is closer to the
+    R behaviour than the previous Savitzky-Golay approximation.
+    """
     y = np.asarray(y, dtype=float)
     n = len(y)
     if n < 5:
         return y.copy()
-    # Pick an odd window that is at most ~n/4 but >= 5.
-    win = max(5, (n // 4) | 1)
-    if win % 2 == 0:
-        win += 1
-    if win >= n:
-        win = n - 1 if (n - 1) % 2 == 1 else n - 2
-        if win < 5:
+    finite = np.isfinite(y)
+    if not finite.all():
+        if finite.sum() < 5:
             return y.copy()
-    polyorder = 3 if win > 3 else 2
+        x_all = np.arange(n, dtype=float)
+        x_fit = x_all[finite]
+        y_fit = y[finite]
+    else:
+        x_fit = np.arange(n, dtype=float)
+        y_fit = y
+    # GCV is ill-defined on a flat trajectory.
+    if np.ptp(y_fit) <= 0.0:
+        return y.copy()
     try:
-        return savgol_filter(y, window_length=win, polyorder=polyorder, mode="interp")
-    except ValueError:
+        spline = make_smoothing_spline(x_fit, y_fit, lam=None)
+        return np.asarray(spline(np.arange(n, dtype=float)), dtype=float)
+    except (ValueError, np.linalg.LinAlgError):
         return y.copy()
 
 
@@ -133,7 +147,7 @@ def _mad_outliers_column(peak: np.ndarray, mad_thresh: float) -> np.ndarray:
     # constant (only a few bins deviate). In that case the R version still
     # flags anything above/below the median because ``median + 0 == median``.
     # We mirror that, using a tiny numerical tolerance to absorb smoothing
-    # noise (~1e-15 from savgol on a flat input).
+    # noise (~1e-12 from the smoothing spline on a near-flat input).
     numeric_eps = 1e-9 * max(1.0, abs(median_peak))
     if mad_peak <= numeric_eps:
         deviation = np.abs(smoothed - median_peak)
