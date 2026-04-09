@@ -1,0 +1,51 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "peacoqc"
+version = "0.1.0"
+description = "Peak-based selection of high quality cytometry data (Python port of the R/Bioconductor PeacoQC package, backed by pytometry / AnnData)."
+readme = "README.md"
+license = { text = "GPL-3.0-or-later" }
+authors = [
+    { name = "Annelies Emmaneel" },
+    { name = "PeacoQC Python port contributors" },
+]
+requires-python = ">=3.10"
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+    "pytometry>=0.1.5",
+    "anndata>=0.10",
+    "numpy>=1.24",
+    "scipy>=1.11",
+    "pandas>=2.0",
+    "scikit-learn>=1.3",
+    "matplotlib>=3.7",
+    "readfcs>=1.1",
+]
+
+[project.optional-dependencies]
+fcs = ["flowio>=1.3"]
+plotting = ["seaborn>=0.13"]
+test = ["pytest>=7", "pytest-mpl"]
+dev = ["pytest", "ruff", "mypy"]
+
+[project.urls]
+Homepage = "https://github.com/mdmanurung/peacoqc"
+Source = "https://github.com/mdmanurung/peacoqc"
+Issues = "https://github.com/mdmanurung/peacoqc/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/peacoqc"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "parity: tests requiring R reference fixtures",
+]
