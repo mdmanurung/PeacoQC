@@ -79,7 +79,8 @@ def find_events_per_bin(
         if values is None:
             raise ValueError("values must be provided when remove_zeros=True")
         nonzero_counts = np.sum(values != 0, axis=0)
-        max_bins_mass = int(nonzero_counts.min() // min_cells)
+        # R uses float division: min(apply(...))/min_cells
+        max_bins_mass = float(nonzero_counts.min()) / min_cells
         if max_bins_mass < max_bins:
             max_bins = max(1, max_bins_mass)
 
