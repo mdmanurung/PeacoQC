@@ -13,19 +13,19 @@ import numpy as np
 def _nadaraya_watson(y: np.ndarray, bandwidth: float = 50.0) -> np.ndarray:
     """A simple Nadaraya-Watson estimator using a box kernel.
 
-    R's ``ksmooth(..., kernel='box', bandwidth=50)`` averages over a window
-    of width ``bandwidth`` centered on each point. The window uses kernel
-    scaling ``0.25 * bandwidth`` on each side (matching R's definition).
+    R's ``ksmooth(..., kernel='box', bandwidth=50)`` uses a box kernel
+    that is nonzero for ``|x - x0| < bandwidth / 2``, i.e. a half-width
+    of ``bandwidth / 2``.
     """
     y = np.asarray(y, dtype=float)
     n = len(y)
     if n == 0:
         return y.copy()
     x = np.arange(n, dtype=float)
-    half = 0.25 * bandwidth  # R's default box kernel half-width
+    half = 0.5 * bandwidth  # R ksmooth box kernel: nonzero for |x-x0| < bw/2
     out = np.empty(n, dtype=float)
     for i in range(n):
-        mask = (np.abs(x - i) <= half)
+        mask = np.abs(x - i) < half
         if not np.any(mask):
             out[i] = y[i]
         else:

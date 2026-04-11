@@ -47,13 +47,12 @@ for the underlying methodology.
 - **FCS reader**: `peacoqc.read_fcs` is a thin wrapper over
   `pytometry.io.read_fcs` that normalizes min/max range metadata from
   `flowcore_p{n}rmin`/`rmax` into `adata.var['min_range']` / `['max_range']`.
-- **Isolation Tree**: the R package ships a custom SD-based isolation tree.
-  This port uses `sklearn.ensemble.IsolationForest` — the results are
-  broadly equivalent but not bit-identical.
+- **Isolation Tree**: the default `it_method="sd_tree"` is a faithful port of
+  the R package's custom SD-based isolation tree (`isolationTreeSD`). Set
+  `it_method="sklearn"` to use `sklearn.ensemble.IsolationForest` instead.
 - **Smoothing**: per-channel peak trajectories are smoothed with
-  `scipy.interpolate.make_smoothing_spline` (GCV-chosen lambda) — a cubic
-  smoothing spline, the same family as R's `smooth.spline`. R's explicit
-  `spar=0.5` parameter is not reproduced exactly.
+  `scipy.interpolate.make_smoothing_spline` using a fixed `lam` derived from
+  R's `smooth.spline(spar=0.5)` formula.
 - **Output layout**: the port returns a typed `PeacoQCResult` dataclass and
   writes a CSV report by default. The original R-style report TSV is still
   readable by `peaco_qc_heatmap`.

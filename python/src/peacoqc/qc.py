@@ -47,20 +47,22 @@ def peaco_qc(
     time_channel: str | None = "Time",
     report_path: str | os.PathLike[str] | None = None,
     random_state: int = 0,
+    it_method: str = "sd_tree",
 ) -> PeacoQCResult:
     """Run the full PeacoQC pipeline on an :class:`anndata.AnnData`.
 
     Parameters mirror the R function; see the upstream
     `documentation <https://www.bioconductor.org/packages/release/bioc/manuals/PeacoQC/man/PeacoQC.pdf>`_
-    for details. Differences from the R port:
+    for details.
 
     - ``output_directory``/``save_fcs``/``plot``/``name_directory``/``suffix_fcs``
       are omitted — use :func:`plot_peaco_qc` and :func:`write_fcs` on the
       returned :class:`PeacoQCResult` instead.
     - ``determine_good_cells`` accepts the Python-style values ``"all"``,
       ``"IT"``, ``"MAD"``, or ``False``.
-    - The isolation tree is replaced by
-      :class:`sklearn.ensemble.IsolationForest` (see README).
+    - ``it_method`` selects the isolation tree algorithm: ``"sd_tree"``
+      (default, matches R's custom SD-based tree) or ``"sklearn"``
+      (uses :class:`sklearn.ensemble.IsolationForest`).
     """
     if not isinstance(adata, ad.AnnData):
         raise TypeError("adata should be an AnnData object.")
@@ -137,7 +139,10 @@ def peaco_qc(
     if run_it:
         if nr_bins >= force_it and peak_matrix.shape[1] > 0:
             it_good, it_info = isolation_tree_outliers(
-                peak_matrix, it_limit=it_limit, random_state=random_state
+                peak_matrix,
+                it_limit=it_limit,
+                random_state=random_state,
+                method=it_method,
             )
             good_mask = it_good
             bad_bin_mask = ~it_good

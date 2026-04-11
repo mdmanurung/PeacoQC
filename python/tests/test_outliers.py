@@ -13,20 +13,36 @@ from peacoqc.outliers import (
 )
 
 
-def test_isolation_tree_marks_outlier_bin():
+def test_isolation_tree_sd_marks_outlier_bin():
+    """SD-tree (R-parity default) should isolate extreme bins."""
     rng = np.random.default_rng(0)
     n_bins = 60
     X = rng.normal(0.0, 0.1, size=(n_bins, 3))
-    # Add a couple of extreme bins
     X[10] += 5
     X[40] -= 5
     df = pd.DataFrame(X, columns=["ch1__1", "ch2__1", "ch3__1"])
-    good, info = isolation_tree_outliers(df, it_limit=0.6, random_state=0)
+    good, info = isolation_tree_outliers(df, it_limit=0.6, method="sd_tree")
     assert not good[10]
     assert not good[40]
-    # Plenty of inliers should remain.
     assert good.sum() > 0.5 * n_bins
-    # IsolationForest builds its splits on some subset of the columns.
+    assert isinstance(info["split_columns"], list)
+    assert len(info["anomaly_scores"]) == n_bins
+
+
+def test_isolation_tree_sklearn_marks_outlier_bin():
+    """sklearn IsolationForest fallback should also work."""
+    rng = np.random.default_rng(0)
+    n_bins = 60
+    X = rng.normal(0.0, 0.1, size=(n_bins, 3))
+    X[10] += 5
+    X[40] -= 5
+    df = pd.DataFrame(X, columns=["ch1__1", "ch2__1", "ch3__1"])
+    good, info = isolation_tree_outliers(
+        df, it_limit=0.6, random_state=0, method="sklearn"
+    )
+    assert not good[10]
+    assert not good[40]
+    assert good.sum() > 0.5 * n_bins
     assert isinstance(info["split_columns"], list)
 
 
