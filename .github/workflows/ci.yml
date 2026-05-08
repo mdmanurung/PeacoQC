@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   tests:
     name: Tests (Python ${{ matrix.python-version }})
@@ -62,6 +65,8 @@ jobs:
           python -m pip install -e ".[docs,fcs,plotting]"
 
       - name: Build documentation
+        env:
+          SPHINX_OFFLINE: "1"
         run: sphinx-build -b html -W --keep-going docs/source docs/_build/html
 
   package:

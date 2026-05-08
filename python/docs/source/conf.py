@@ -61,6 +61,8 @@ nbsphinx_execute = "never"
 nbsphinx_allow_errors = False
 
 # -- intersphinx -------------------------------------------------------------
+# Set SPHINX_OFFLINE=1 for deterministic builds without external inventory
+# fetches (useful in CI and restricted-network environments).
 if os.environ.get("SPHINX_OFFLINE") == "1":
     intersphinx_mapping = {}
 else:
