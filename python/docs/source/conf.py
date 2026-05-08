@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+import os
 from pathlib import Path
 
 # -- Path setup --------------------------------------------------------------
@@ -60,15 +61,20 @@ nbsphinx_execute = "never"
 nbsphinx_allow_errors = False
 
 # -- intersphinx -------------------------------------------------------------
-intersphinx_mapping = {
-    "python": ("https://docs.python.org/3", None),
-    "numpy": ("https://numpy.org/doc/stable/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
-    "pandas": ("https://pandas.pydata.org/docs/", None),
-    "sklearn": ("https://scikit-learn.org/stable/", None),
-    "anndata": ("https://anndata.readthedocs.io/en/stable/", None),
-    "matplotlib": ("https://matplotlib.org/stable/", None),
-}
+# Set SPHINX_OFFLINE=1 for deterministic builds without external inventory
+# fetches (useful in CI and restricted-network environments).
+if os.environ.get("SPHINX_OFFLINE") == "1":
+    intersphinx_mapping = {}
+else:
+    intersphinx_mapping = {
+        "python": ("https://docs.python.org/3", None),
+        "numpy": ("https://numpy.org/doc/stable/", None),
+        "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+        "pandas": ("https://pandas.pydata.org/docs/", None),
+        "sklearn": ("https://scikit-learn.org/stable/", None),
+        "anndata": ("https://anndata.readthedocs.io/en/stable/", None),
+        "matplotlib": ("https://matplotlib.org/stable/", None),
+    }
 
 # -- HTML output -------------------------------------------------------------
 html_theme = "furo"
