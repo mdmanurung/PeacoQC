@@ -58,13 +58,15 @@ To build this documentation site locally:
 
 .. code-block:: bash
 
+    sudo apt-get update && sudo apt-get install -y pandoc
     pip install -e "python/[docs]"
     sphinx-build -b html python/docs/source python/docs/_build/html
     # then open python/docs/_build/html/index.html
 
 The user guide notebook (``python/docs/vignette.ipynb``) is
 pre-executed, so ``nbsphinx`` renders its embedded figures without
-re-running the pipeline.
+re-running the pipeline. ``pandoc`` is still required so the notebook
+can be converted during the Sphinx build.
 
 Verifying the installation
 --------------------------

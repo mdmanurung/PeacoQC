@@ -42,6 +42,9 @@ See `docs/quickstart.md` for more detail, and the R package's
 [vignette](https://bioconductor.org/packages/release/bioc/vignettes/PeacoQC/inst/doc/PeacoQC.html)
 for the underlying methodology.
 
+To build the local Sphinx docs for this package, install `pandoc` first
+and then run `pip install -e ".[docs]"`.
+
 ## Design notes
 
 - **FCS reader**: `peacoqc.read_fcs` is a thin wrapper over
